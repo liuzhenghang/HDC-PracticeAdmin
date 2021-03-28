@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>专业管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <fieldset class="table-search-fieldset">
+        <legend>搜索信息</legend>
+        <div style="margin: 10px 10px 10px 10px">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">筛选二级学院</label>
+                        <div class="layui-input-inline">
+                            <select id="select_college" name="college" lay-filter="select_college" lay-verify="required"
+                                    lay-search="">
+                                <option value="0">选择学院或搜索</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">筛选专业</label>
+                        <div class="layui-input-inline">
+                            <select id="select_major" name="major" lay-verify="required" lay-search="">
+                                <option value="0">选择专业或搜索</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">筛选姓名</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="name">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i
+                                class="layui-icon"></i> 搜 索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </fieldset>
+    <div class="layuimini-main">
+        <script type="text/html" id="studentToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">添加</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel导入</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板
+                </button>
+            </div>
+        </script>
+        <table class="layui-hide" id="studentTable" lay-filter="studentTable"></table>
+        <script type="text/html" id="studentTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+            <!--            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="divide">分配实习</a>-->
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'easyAjax', 'layer'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            form = layui.form,
+            layer = layui.layer,
+            table = layui.table;
+        ajax.post("/api/college/list", null, function (data) {
+            for (let i = 0; i < data.length; i++) {
+                $("#select_college").append("<option value='" + data[i].id + "'>" + data[i].name + "</option>")
+            }
+            form.render();
+        }, function (res) {
+            ajax.errorMessage(res);
+        })
+        form.on('submit(data-search-btn)', function (obj) {
+            //搜索器监听
+            table.reload('studentTable', {
+                where: obj.field
+            }, 'data');
+            return false;
+        })
+        form.on('select(select_college)', function (data) {
+            if (data.value !== 0) {
+                ajax.post("/api/major/list", {collegeId: data.value}, function (res) {
+                    let str = "";
+                    if (res.length > 0) {
+                        str = "<option value='0'>选择专业或搜索</option>"
+                        for (let i = 0; i < res.length; i++) {
+                            str += "<option value='" + res[i].id + "'>" + res[i].name + "</option>";
+                        }
+                    } else {
+                        str = "<option value='0'>无专业</option>"
+                    }
+                    $("#select_major").html(str);
+                    form.render();
+                }, function (err) {
+                    ajax.errorMessage(err);
+                }, "loading")
+            }
+        })
+        table.render({
+            elem: '#studentTable',
+            id: 'studentTable',
+            url: ajax.getHost() + '/admin/student/page',
+            toolbar: '#studentToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            where: {
+                collegeId: 0
+            },
+            headers: ajax.getHeader(),
+            parseData: function (data) {
+                if (data.code === 0) {
+                    return {
+                        code: 0,
+                        msg: 'success',
+                        count: data.data.count,
+                        data: data.data.data
+                    }
+                }
+                return {
+                    code: data.code,
+                    msg: data.msg,
+                    count: 0,
+                    data: null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50},
+                {field: 'uid', width: 140, title: '学号', sort: true},
+                {field: 'name', width: 80, title: '姓名', sort: true},
+                {field: 'sex', width: 80, title: '性别', edit: 'text'},
+                {field: 'collegeName', width: 200, title: '学院'},
+                {field: 'majorName', width: 200, title: '专业'},
+                // {field: 'baseName', width: 200, title: '实习学校(带队教师)'},
+                // {field: 'teacherName', width: 200, title: '指导教师'},
+                {field: 'classes', width: 200, title: '班级'},
+                {field: 'tel', width: 200, title: '个人电话'},
+                {field: 'mail', width: 200, title: '个人邮箱'},
+                // {field: 'director', width: 80, title: '备注'},
+                {title: '操作', minWidth: 150, toolbar: '#studentTableBar', align: "right"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        table.on('edit(studentTable)', function (obj) {
+            ajax.post("/admin/college/update", obj.data, function () {
+                ajax.LMessageSuccess("修改成功");
+            }, function (data) {
+                ajax.errorMessage(data);
+                table.reload('studentTable');
+            })
+        })
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(studentTable)', function (obj) {
+            switch (obj.event) {
+                case "add":
+                    layer.open({
+                        type: 2,
+                        anim: 1,
+                        content: 'form/student.html',
+                        area: ['50%', '90%'],
+                        maxmin: true,
+                        end: function () {
+                            table.reload('studentTable');
+                        }
+                    });
+                    break;
+                case "excel":
+                    layer.open({
+                        title: "导入学生",
+                        type: 2,
+                        anim: 1,
+                        content: 'excel/student.html',
+                        area: ['30%', '90%'],
+                        maxmin: true,
+                        end: function () {
+                            table.reload('studentTable');
+                        }
+                    });
+                    break;
+                case "template":
+                    window.location = ajax.getHost() + "/file/excel/template?type=student"
+                    break;
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(studentTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(studentTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'delete') {
+                layer.open({
+                    content: '<p>确认删除:' + data.name + '?</p>' +
+                        '<p><input type="checkbox" id="del_user">同时解绑用户</p>' +
+                        '<p><input type="checkbox" id="del_practice_device">删除实习信息</p>'
+                    , btn: ['确认', '取消']
+                    , yes: function (index, layero) {
+                        let delUser = $("#del_user").prop("checked")
+                        let delPracticeDevice = $("#del_practice_device").prop("checked")
+                        data.delUser = delUser
+                        data.delPracticeDevice = delPracticeDevice
+                        ajax.post("/admin/student/del", data, function () {
+                            obj.del();
+                            layer.close(index);
+                        }, function (data) {
+                            ajax.errorMessage(data);
+                        })
+                    }
+                    , btn2: function (index, layero) {
+                    }
+                    , cancel: function () {
+                        //右上角关闭回调
+                        return false;
+                    }
+                });
+            } else if (obj.event === 'edit') {
+                let index = layer.open({
+                    type: 2,
+                    anim: 1,
+                    content: 'form/student.html?edit=' + data.uid,
+                    area: ['50%', '90%'],
+                    maxmin: true,
+                    end: function () {
+                        table.reload('studentTable');
+                    }
+                });
+            } else if (obj.event === 'divide') {
+                layer.open({
+                    type: 2,
+                    anim: 1,
+                    content: 'form/student_divide.html?uid=' + data.uid,
+                    area: ['50%', '90%'],
+                    maxmin: true,
+                    end: function () {
+                        table.reload('studentTable');
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

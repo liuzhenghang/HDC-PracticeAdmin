@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>公告</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<fieldset class="layui-elem-field">
+    <legend id="title">公告</legend>
+    <div class="layui-field-box" id="app">
+        <form class="layui-form layui-form-pane" lay-filter="notice">
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">公告标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">权限配置</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="toStudent" title="学生可见" lay-skin="primary">
+                    <input type="checkbox" name="toTeacher" title="教师可见" lay-skin="primary">
+                    <input type="checkbox" name="toBase" title="基地可见" lay-skin="primary">
+                    <input type="checkbox" name="toAdmin" title="二级学院可见" lay-skin="primary">
+                </div>
+            </div>
+            <div class="layui-form-item" pane style="display: none">
+                <label class="layui-form-label">ID</label>
+                <div class="layui-input-block">
+                    <input type="number" value="0" name="id" placeholder="ID" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item" pane style="display: none">
+                <label class="layui-form-label">发布者</label>
+                <div class="layui-input-block">
+                    <input type="number" name="byUser" placeholder="请输入名称" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item" pane style="display: none">
+                <label class="layui-form-label">发布者UID</label>
+                <div class="layui-input-block">
+                    <input type="number" name="byName" placeholder="请输入名称" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">内容</label>
+                <div class="layui-input-block">
+                    <textarea name="text" placeholder="请输入内容" class="layui-textarea"></textarea>
+                </div>
+            </div>
+
+            <button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+        </form>
+    </div>
+</fieldset>
+</body>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../lib/vue.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    function getQueryVariable(variable){
+        let query = window.location.search.substring(1);
+        let vars = query.split("&");
+        for (let i=0;i<vars.length;i++) {
+            let pair = vars[i].split("=");
+            if(pair[0] === variable){return pair[1];}
+        }
+        return false;
+    }
+    let url="/admin/notice/add";
+    layui.use(['easyAjax','form','layer'], function () {
+        let ajax = layui.easyAjax,
+            $=layui.jquery,
+            form = layui.form,
+            layer=layui.layer;
+        ajax.getHeader();
+        form.on("submit(add)",function (obj) {
+            let data=obj.field;
+            ajax.post(url,data,function (res) {
+                ajax.LMessageSuccess("操作成功")
+                setTimeout(function () {
+                    let index = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(index);
+                },500)
+            },function (err) {
+                ajax.errorMessage(err)
+            },"正在执行")
+            return false;
+        })
+        if (getQueryVariable("edit")){
+            let uid=getQueryVariable("edit");
+            url="/admin/notice/update";
+            ajax.get("/admin/notice/get/"+uid,null,function (res) {
+                form.val("notice",res)
+                $("#title").html("编辑公告："+uid);
+            },function (err) {
+                ajax.errorMessage(err);
+            },"正在拉取数据")
+        }else {
+            $("#title").html("添加公告")
+        }
+
+
+    })
+
+
+
+</script>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>实习基地管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="practice_baseToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">添加新基地</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel导入</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板</button>
+            </div>
+        </script>
+        <table class="layui-hide" id="practice_baseTable" lay-filter="practice_baseTable"></table>
+        <script type="text/html" id="practice_baseTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax','layer'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            form = layui.form,
+            layer = layui.layer,
+            table = layui.table;
+        // ajax.post("/api/college/list",null,function (data) {
+        //     for (let i = 0; i < data.length; i++) {
+        //         $("#select_college").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>")
+        //     }
+        //     form.render();
+        // },function (res) {
+        //     ajax.errorMessage(res);
+        // })
+        // form.on('submit(data-search-btn)',function (obj) {
+        //     //搜索器监听
+        //     table.reload('practice_baseTable', {
+        //         where: obj.field
+        //     }, 'data');
+        //     return false;
+        // })
+        table.render({
+            elem: '#practice_baseTable',
+            id: 'practice_baseTable',
+            url: ajax.getHost()+'/admin/practice/base/page',
+            toolbar: '#practice_baseToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50,rowspan:2},
+                // {field: 'id',  title: '基地代号',rowspan:2,align:"center", sort: true},
+                {field: 'name', title: '基地名称',rowspan:2, sort: true},
+                { title: '地址信息',colspan:4,align:"center"},
+                {title: '操作', minWidth: 100,rowspan:2, toolbar: '#practice_baseTableBar',align: 'right'}
+            ],[
+                {field: 'province', width: 100, title: '省'},
+
+                {field: 'city', width: 100, title: '市'},
+
+                {field: 'county', width: 100, title: '区（县）'},
+
+                {field: 'address', width: 100, title: '详细地址'}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(practice_baseTable)', function (obj) {
+            switch (obj.event) {
+                case "add":
+                    layer.open({
+                        type: 2,
+                        anim:1,
+                        content: 'form/practice_base.html',
+                        area: ['50%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_baseTable');
+                        }
+                    });
+                    break;
+                case "excel":
+                    layer.open({
+                        title:"导入专业",
+                        type: 2,
+                        anim:1,
+                        content: 'excel/practice_base.html',
+                        area: ['30%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_baseTable');
+                        }
+                    });
+                    break;
+                case "template":
+                    window.location=ajax.getHost()+"/file/excel/template?type=practiceBase"
+                    break;
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(practice_baseTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(practice_baseTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'delete') {
+                layer.confirm('警告！不建议删除实训基地，你可以更改他的信息！请谨慎操作', function (index) {
+                    ajax.post("/admin/practice/base/del",data,function () {
+                        obj.del();
+                        layer.close(index);
+                    },function (data) {
+                        ajax.errorMessage(data);
+                    })
+                });
+            }else if (obj.event === 'edit'){
+                let index = layer.open({
+                    type: 2,
+                    anim:1,
+                    content: 'form/practice_base.html?edit='+data.id,
+                    area: ['50%', '90%'],
+                    maxmin: true,
+                    end:function () {
+                        table.reload('practice_baseTable');
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>学生管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<fieldset class="layui-elem-field">
+    <legend>添加学生</legend>
+    <div class="layui-field-box" id="app">
+        <form class="layui-form layui-form-pane" lay-filter="studentForm">
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">学号</label>
+                <div class="layui-input-block">
+                    <input id="uid" type="text" name="uid" required lay-verify="number" placeholder="请输入学号" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">班级</label>
+                <div class="layui-input-block">
+                    <input type="text" name="classes" required lay-verify="required" placeholder="请输入班级名" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">电话</label>
+                <div class="layui-input-block">
+                    <input type="text" name="tel" required lay-verify="phone" placeholder="请输入手机号码" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-block">
+                    <input type="text" name="mail" required lay-verify="email" placeholder="请输入邮箱地址" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">二级学院</label>
+                <div class="layui-input-block">
+                    <select name="college" lay-filter="select_college" lay-verify="required">
+                        <option value="">请选择一个二级学院</option>
+                        <option :value="item.id" v-for="item in college">{{item.name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">二级学院</label>
+                <div class="layui-input-block">
+                    <select name="major" id="select_major" lay-verify="required">
+                        <option value="">请选择专业</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">性别</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="sex" value="男" title="男">
+                    <input type="radio" name="sex" value="女" title="女">
+                </div>
+            </div>
+
+
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">年级</label>
+                <div class="layui-input-block">
+                    <input type="text" name="grade" required lay-verify="number" placeholder="请输入年级" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+        </form>
+    </div>
+</fieldset>
+</body>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../lib/vue.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    function getQueryVariable(variable){
+        let query = window.location.search.substring(1);
+        let vars = query.split("&");
+        for (let i=0;i<vars.length;i++) {
+            let pair = vars[i].split("=");
+            if(pair[0] === variable){return pair[1];}
+        }
+        return false;
+    }
+    let url="/admin/student/add";
+    let edit=null;
+    layui.use(['easyAjax'], function () {
+        let ajax = layui.easyAjax,
+            $=layui.jquery;
+        ajax.getHeader();
+        let app=new Vue({
+            el:"#app",
+            data:{
+                college:[],
+            },
+            updated:function (){
+                layui.use('form', function () {
+                    let form = layui.form;
+                    if (edit!==null){
+                        form.val("studentForm",edit)
+                        edit=null;
+                    }
+                    form.on("submit(add)",function (obj) {
+                        ajax.post(url,obj.field,function (res) {
+                            ajax.LMessageSuccess("操作成功")
+                            setTimeout(function () {
+                                let index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                            },500)
+                        },function (err) {
+                            ajax.errorMessage(err)
+                        },"正在执行")
+                        return false;
+                    })
+                    form.on("select(select_college)",function (data) {
+                        if (data.value!==0){
+                            ajax.post("/api/major/list",{collegeId:data.value},function (res) {
+                                let str="";
+                                if (res.length>0){
+                                    str="<option value='0'>选择专业或搜索</option>"
+                                    for (let i = 0; i < res.length; i++) {
+                                        str+="<option value='"+res[i].id+"'>"+res[i].name+"</option>";
+                                    }
+                                }else {
+                                    str="<option value='0'>无专业</option>"
+                                }
+                                $("#select_major").html(str);
+                                form.render();
+                            },function (err) {
+                                ajax.errorMessage(err);
+                            },"loading")
+                        }
+                    })
+                })
+            }
+        })
+        function pushList(){
+            ajax.post("/api/college/list",null,function (data) {
+                app.college=data;
+            },function (data) {
+                ajax.errorMessage(data)
+            },"正在拉取表单")
+        }
+        if (getQueryVariable("edit")){
+            let uid=getQueryVariable("edit");
+            url="/admin/student/update";
+            ajax.post("/admin/student/get/"+uid,null,function (res) {
+                edit=res;
+                ajax.post("/api/major/getCollege",{majorId:edit.major},function (res) {
+                    edit.college=res.college;
+                    ajax.post("/api/major/list",{collegeId:edit.college},function (res) {
+                        let str="";
+                        if (res.length>0){
+                            str="<option value='0'>选择专业或搜索</option>"
+                            for (let i = 0; i < res.length; i++) {
+                                str+="<option value='"+res[i].id+"'>"+res[i].name+"</option>";
+                            }
+                        }else {
+                            str="<option value='0'>无专业</option>"
+                        }
+                        $("#select_major").html(str);
+                        pushList();
+                    },function (err) {
+                        ajax.errorMessage(err);
+                    },"正在拉取编辑信息")
+
+                },function (err) {
+                    ajax.errorMessage(err);
+                },"正在拉取编辑信息")
+            },function (err) {
+                ajax.errorMessage(err);
+            },"正在拉取数据")
+        }else {
+            $("#uid").attr("readonly",false)
+            pushList();
+        }
+
+
+    })
+
+
+
+</script>
+</html>

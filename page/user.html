@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>专业管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <fieldset class="table-search-fieldset">
+        <legend>搜索信息</legend>
+        <div style="margin: 10px 10px 10px 10px">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">学号/工号</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="uid">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </fieldset>
+    <div class="layuimini-main">
+        <script type="text/html" id="userToolbar">
+            <div class="layui-btn-container">
+
+            </div>
+        </script>
+        <table class="layui-hide" id="userTable" lay-filter="userTable"></table>
+        <script type="text/html" id="userTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="unbind">解除绑定</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax','layer','timeago'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            timeago = layui.timeago,
+            form = layui.form,
+            layer = layui.layer,
+            table = layui.table;
+        form.on('submit(data-search-btn)',function (obj) {
+            //搜索器监听
+            table.reload('userTable', {
+                where: obj.field
+            }, 'data');
+            return false;
+        })
+        table.render({
+            elem: '#userTable',
+            id: 'userTable',
+            url: ajax.getHost()+'/admin/user/page',
+            toolbar: '#userToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            where:{
+                collegeId:0
+            },
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            done:function () {
+                timeago.render($('.timeago'));
+            },
+            cols: [[
+                {type: "checkbox", width: 50},
+                {field: 'id', width: 140, title: '索引', sort: true},
+                {field: 'uid', width: 140, title: '学号/工号', sort: true},
+                {field: '', width: 200, title: '微信状态',templet:function (d) {
+                        if (d.openId!=null){
+                            return d.bindTime
+                        }
+                        return "<span class='layui-badge layui-bg-gray'>未绑定</span>"
+                    }},
+                {field: '', width: 140, title: '权限等级',templet:function (d) {
+                        switch (d.status) {
+                            case 0:return "超级管理员"
+                            case 1:return "学院管理员"
+                            case 2:return "实习基地"
+                            case 3:return "教师"
+                            case 4:return "学生"
+                            default:return "未知"
+                        }
+
+                    }},
+                {field: '', width: 140, title: '登陆时间',templet:function (d) {
+                        if (d.loginTime!=null){
+                            return "<span class='timeago' datetime='"+d.loginTime+"'></span>"
+                        }
+                        return "从来未登录"
+                    }},
+                {field: '', width: 200, title: '登陆IP',templet:function (d) {
+                        if (d.loginTime!=null){
+                            return d.loginIp+"通过"+d.loginFrom
+                        }
+                        return "从来未登录"
+                    }},
+
+                {field: '', width: 140, title: '用户状态',templet:function (d) {
+                        if (d.enable){
+                            return "正常"
+                        }
+                        return "<span class='layui-badge'>封禁</span>"
+                    }},
+
+
+                {title: '操作', minWidth: 150, toolbar: '#userTableBar', align: "right"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+        table.on('sort()', function(obj) {
+            timeago.render($('.timeago'));
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(userTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(userTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'unbind') {
+                layer.confirm('解绑不影响学生或教师数据，只需重新在微信绑定即可', function (index) {
+                    ajax.post("/admin/user/unbind",data,function () {
+                        obj.del();
+                        layer.close(index);
+                    },function (data) {
+                        ajax.errorMessage(data);
+                    })
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

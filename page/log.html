@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>系统日志</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style>
+        body,html{
+            margin: 0;
+            padding: 0;
+        }
+        #log-container{
+            margin: 0 10px 0 10px;
+            /*height: 100%;*/
+            overflow-y: scroll;
+            background: #333;
+            padding: 10px;
+        }
+        #slideDownBox:hover{
+            cursor:pointer;
+        }
+        #slideDownBox{
+            margin: 10px 0 0 10px;
+        }
+
+        .none{
+            /*display: none;*/
+        }
+        .log{
+            font-size: small;
+            /*font-weight: bolder;*/
+            /*line-height: 180%;*/
+            transition: all 2000ms;
+        }
+        .yellow{
+            color: orange;
+        }
+        .INFO{
+            /*color: #5FB878;*/
+            color: rgba(0,255,0,0.9);
+        }
+        .ERROR{
+            /*color: #FF5722;*/
+            color: rgba(255,0,0,0.9);
+        }
+        .WARN{
+            /*color: #01AAED;*/
+            color: rgba(255,255,0,0.9);
+        }
+        .DEBUG{
+            /*color: #b1b1b1;*/
+            color: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body>
+<div class="">
+    <div id="settingBox" style="display: block;z-index: 999;position: absolute;background: white;width: 100%">
+        <fieldset class="layui-elem-field"  >
+            <legend>配置信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" lay-filter="cfg">
+                    <div class="layui-form-item">
+                        <blockquote id="dangerTips" class="layui-elem-quote" style="display: none">开启数据库日志的页面监听可能会影响业务响应速度</blockquote>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">数据库</label>
+                            <div class="layui-input-inline">
+                                <input type="checkbox" lay-filter="sql" name="sql" lay-skin="switch" lay-text="DEBUG|WARN">
+                                <input type="checkbox" lay-filter="sqlSocket" name="sqlSocket" lay-skin="switch" lay-text="监听|控制台">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">控制台</label>
+                            <div class="layui-input-inline">
+                                <input type="checkbox" lay-filter="console" name="console" lay-skin="switch" lay-text="ON|OFF">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">页面监听</label>
+                            <div class="layui-input-inline">
+                                <input type="checkbox" lay-filter="socket" name="socket" lay-skin="switch" lay-text="ON|OFF">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">日志级别</label>
+                            <div class="layui-input-inline">
+                                <select name="level" lay-filter="level">
+                                    <option value="">未知</option>
+                                    <option value="DEBUG">DEBUG</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARN">WARN</option>
+                                    <option value="ERROR">ERROR</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button id="connect" class="layui-btn" style="">
+                                <a id="socket">重新连接</a>
+                                <span id="logs_num" class="layui-badge layui-bg-gray">1</span>
+                                <span id="dangerBadge" style="display: none" class="layui-badge">高能耗</span>
+                            </button>
+                        </div>
+                        <div class="layui-inline" style="float: right">
+                            <input id="slideUpBox" type="button" class="layui-btn layui-icon layui-icon-up" value="收起"/>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+    </div>
+    <span class="layui-badge layui-bg-blue" id="slideDownBox">配置选项</span>
+    <div id="log-container" style="overflow-y: auto">
+        <p class="log"></p>
+    </div>
+
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'form','easyAjax','layer'], function () {
+        let $ = layui.jquery,
+            ajax = layui.easyAjax,
+            form = layui.form,
+            layer = layui.layer;
+        let sqlSocketTipsDisplay=false;
+        $("#slideUpBox").click(function () {
+            $("#settingBox").slideUp(300)
+        })
+        $("#slideDownBox").click(function () {
+            $("#settingBox").slideDown(200)
+        })
+
+        setTimeout(function () {
+            $("#settingBox").slideUp(500)
+        },1000)
+
+        let p=window.parent.document.getElementsByClassName("layui-tab-item layui-show")
+        for (let i = 0; i < p.length; i++) {
+            $("#log-container").height(($(p[i]).children().eq(0)[0].scrollHeight)*0.9)
+        }
+        function sqlSocketTips(s) {
+            if (s){
+                $("#dangerBadge").show();
+            }else {
+                $("#dangerBadge").hide();
+            }
+            if (s && !sqlSocketTipsDisplay){
+                sqlSocketTipsDisplay=true;
+                $("#dangerTips").slideDown(500,function () {
+                    setTimeout(function () {
+                        $("#dangerTips").slideUp(500,function () {
+                            sqlSocketTipsDisplay=false;
+                        })
+                    },2000)
+                })
+            }
+        }
+        ajax.get("/admin/system/log/cfg",null,function (data) {
+            form.val('cfg',data)
+            sqlSocketTips(data.sqlSocket);
+        },function (err) {
+
+        });
+        form.on('switch(sql)',function (data){
+            ajax.post("/admin/system/log/set/sql",{sql:data.elem.checked},function (data) {
+
+            },function (err) {
+
+            },"更改中")
+        })
+        form.on('switch(sqlSocket)',function (data){
+            ajax.post("/admin/system/log/set/sqlSocket",{sqlSocket:data.elem.checked},function (res) {
+                sqlSocketTips(data.elem.checked);
+            },function (err) {
+
+            },"更改中")
+        })
+        form.on('switch(console)',function (data){
+            ajax.post("/admin/system/log/set/console",{console:data.elem.checked},function (data) {
+
+            },function (err) {
+
+            },"更改中")
+        })
+
+        form.on('switch(socket)',function (data){
+            ajax.post("/admin/system/log/set/socket",{socket:data.elem.checked},function (data) {
+
+            },function (err) {
+
+            },"更改中")
+        })
+        form.on('select(level)',function (data){
+            ajax.post("/admin/system/log/set/level",{level:data.value},function (data) {
+                ajax.LMessageSuccess("调整日志级别成功")
+            },function (err) {
+                ajax.errorMessage(err)
+            },"更改中")
+        })
+
+
+        let logPushBlock=false;
+        let host=ajax.getHost().split("//")[1];
+        let header=ajax.getHeader();
+        let socket=false;
+        function pushLog(log) {
+            let dom=$("<p class='log "+log.level+" none'></p>")
+            log.log.replaceAll("\r","<br/>")
+            dom.text(log.log)
+            // let dom=$("<p class='log yellow none'>"+log.log+"</p>")
+            $("#log-container").append(dom)
+            var scrollHeight = $('#log-container').prop("scrollHeight");
+            $('#log-container').scrollTop(scrollHeight,500);
+            // setTimeout(function () {
+            //     dom.addClass(log.level)
+            // },100)
+
+            $("#logs_num").html($(".log").size())
+        }
+        function connectSocket() {
+            let ws = new WebSocket("ws://"+host+"/websocket/log/"+header.uid+"/"+header.session);
+            ws.onopen = function(evt) {  //绑定连接事件
+                socket=true;
+                $("#socket").html("服务器已连接")
+            };
+
+            ws.onmessage = function(evt) {//绑定收到消息事件
+                let data=JSON.parse(evt.data);
+                if (!data.code){
+                    if (data.type==='log'){
+                        if (logPushBlock){
+                            pushLog(data.data)
+                            // $(".log").eq(0).before("<p class='log'>"+data.data.log+"</p>")
+                        }
+
+                    }
+                }
+            };
+            ws.onclose = function(evt) { //绑定关闭或断开连接事件
+                // console.log("Connection closed.");
+                socket=false;
+                $("#socket").html("重新连接");
+                $("#settingBox").slideDown(500);
+                layer.tips("服务器已断开","#connect")
+            };
+        }
+        connectSocket();
+        $("#connect").click(function () {
+            if (socket){
+                return false;
+            }
+            socket=true;
+            connectSocket();
+            return false;
+        })
+        ajax.get("/admin/system/logs100",null,function (data) {
+            // console.log(data)
+            for (let i = 0; i < data.length; i++) {
+                pushLog(data[i])
+            }
+            logPushBlock=true;
+        },function (err) {
+
+        },"加载历史log")
+
+    });
+</script>
+
+</body>
+</html>

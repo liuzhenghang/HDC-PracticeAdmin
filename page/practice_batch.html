@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>实习批次管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <blockquote class="layui-elem-quote">
+            <div id="vue" >
+                当前操作实习批次:<strong id="now"></strong>
+                <button class="layui-btn" style="display: none" v-show="switchBtn" @click="down()">切换<i class="layui-icon">&#xe714;</i></button>
+                <button class="layui-btn" style="display: none" v-show="!switchBtn" @click="up()">收起<i class="layui-icon">&#xe714;</i></button>
+                <div id="batch_table" style="display: none">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>批次名称</th>
+                            <th>批次代号</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in batch">
+                                <td>{{item.name}}</td>
+                                <td>{{item.bid}}</td>
+                                <td><button @click="setDefault(item)" class="layui-btn">设置为操作批次</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </blockquote>
+        <script type="text/html" id="practice_batchToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">添加</button>
+            </div>
+        </script>
+        <table class="layui-hide" id="practice_batchTable" lay-filter="practice_batchTable"></table>
+        <script type="text/html" id="practice_batchTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax','layer'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            form = layui.form,
+            layer = layui.layer,
+            table = layui.table;
+        let vue=new Vue({
+            el:"#vue",
+            data:{
+                batch:[],
+                switchBtn:true
+            },
+            methods:{
+                up:function () {
+                    vue.switchBtn=true;
+                    $("#batch_table").slideUp(500);
+                },
+                down:function () {
+                    ajax.post("/admin/practice/batch/enable",null,function (res) {
+                        vue.batch=res;
+                        $("#batch_table").slideDown(500);
+                        vue.switchBtn=false;
+                    },function (err) {
+                        ajax.LMessageError("获取批次失败")
+                    },"正在拉取列表")
+                },
+                setDefault:function (item) {
+                    ajax.post("/admin/practice/batch/set/now", {bid:item.bid},function (res) {
+                        vue.up();
+                        layer.confirm("操作批次已调整为'"+item.name+"'建议刷新浏览器，确保数据一致", {
+                            btn: ['刷新','1分钟后自动刷新'] //按钮
+                        }, function(){
+                            parent.location.reload();
+                        }, function(){
+                            parent.setTimeout(function () {
+                                parent.location.reload();
+                            },60*1000)
+                        });
+                    },function (err) {
+                        ajax.errorMessage(err)
+                    },"正在提交")
+                }
+            }
+        });
+
+        ajax.post("/admin/practice/batch/now",null,function (res) {
+            if (res!=null){
+                $("#now").html(res.name);
+            }
+        },function (err) {
+            ajax.LMessageError("获取当前实习批次失败")
+        })
+
+
+        table.render({
+            elem: '#practice_batchTable',
+            id: 'practice_batchTable',
+            url: ajax.getHost()+'/admin/practice/batch/page',
+            toolbar: '#practice_batchToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50,rowspan:2},
+                {field: 'bid',  title: '批次代号',rowspan:2,align:"center", sort: true},
+                {field: 'name', title: '批次名称',rowspan:2,align:"center", sort: true},
+                {field: 'start', width: 140, title: '开始时间',rowspan:2,align:"center"},
+                {field: 'end', width: 140, title: '结束时间',rowspan:2,align:"center"},
+                {field: '', width: 80, title: '成绩',colspan:12,align:"center"},
+                {title: '操作', minWidth: 100,rowspan:2, toolbar: '#practice_batchTableBar', align: "center"}
+            ],[
+                {field: 'fraction1', width: 100, title: '成绩1',align:"center"},
+                {field: 'weight1', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight1+"%";
+                    }},
+                {field: 'fraction2', width: 100, title: '成绩2',align:"center"},
+                {field: 'weight2', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight2+"%";
+                    }},
+                {field: 'fraction3', width: 100, title: '成绩3',align:"center"},
+                {field: 'weight3', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight3+"%";
+                    }},
+                {field: 'fraction4', width: 100, title: '成绩4',align:"center"},
+                {field: 'weight4', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight4+"%";
+                    }},
+                {field: 'fraction5', width: 100, title: '成绩5',align:"center"},
+                {field: 'weight5', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight5+"%";
+                    }},
+                {field: 'fraction6', width: 100, title: '成绩6',align:"center"},
+                {field: 'weight6', width: 60, title: '比重',align:"center",templet:function (d) {
+                        return d.weight6+"%";
+                    }},
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(practice_batchTable)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                let index = layer.open({
+                    type: 2,
+                    anim:1,
+                    content: 'form/practice_batch.html',
+                    area: ['50%', '90%'],
+                    maxmin: true,
+                    end:function () {
+                        table.reload('practice_batchTable');
+                    }
+                });
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(practice_batchTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(practice_batchTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'delete') {
+                layer.confirm('警告！删除该学生后，该学生的实习信息将会丢失！请谨慎操作', function (index) {
+                    ajax.post("/admin/practice_batch/del",data,function () {
+                        obj.del();
+                        layer.close(index);
+                    },function (data) {
+                        ajax.errorMessage(data);
+                    })
+                });
+            }else if (obj.event === 'edit'){
+                let index = layer.open({
+                    type: 2,
+                    anim:1,
+                    content: 'form/practice_batch.html?edit='+data.bid,
+                    area: ['50%', '90%'],
+                    maxmin: true,
+                    end:function () {
+                        table.reload('practice_batchTable');
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

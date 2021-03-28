@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>实习基地管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+
+<div class="layuimini-container">
+    <blockquote class="layui-elem-quote">当前操作实习批次:<strong id="now"></strong>
+        <a href="javascript:;" layuimini-content-href="page/practice_batch.html" data-title="实习批次管理">>>设置>></a>
+    </blockquote>
+    <fieldset class="table-search-fieldset">
+        <legend>搜索信息</legend>
+        <div style="margin: 10px 10px 10px 10px">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">二级学院</label>
+                        <div class="layui-input-inline">
+                            <select id="select_college" name="collegeId" lay-filter="select_college" lay-verify="required" lay-search="">
+                                <option value="0">选择学院或搜索</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">专业</label>
+                        <div class="layui-input-inline">
+                            <select id="select_major" name="majorId" lay-verify="required" lay-search="">
+                                <option value="0">选择专业或搜索</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">带队教师</label>
+                        <div class="layui-input-inline">
+                            <select id="select_teacher" name="tid" lay-search="">
+                                <option value="">选择教师或搜索</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">学生姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="sname" placeholder="请输入学生姓名模糊搜索" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </fieldset>
+    <div class="layuimini-main">
+        <script type="text/html" id="practice_student_divideToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel导入</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板</button>
+            </div>
+        </script>
+        <table class="layui-hide" id="practice_student_divideTable" lay-filter="practice_student_divideTable"></table>
+        <script type="text/html" id="practice_student_divideTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">撤销</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">管理</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax','layer','miniTab'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            form = layui.form,
+            layer = layui.layer,
+            miniTab = layui.miniTab,
+            table = layui.table;
+        miniTab.listen();
+        ajax.post("/admin/practice/batch/now",null,function (res) {
+            if (res!=null){
+                $("#now").html(res.name);
+            }
+        },function (err) {
+            ajax.LMessageError("获取当前实习批次失败")
+        })
+        ajax.post("/api/college/list",null,function (data) {
+            for (let i = 0; i < data.length; i++) {
+                $("#select_college").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>")
+            }
+            form.render();
+        },function (res) {
+            ajax.errorMessage(res);
+        })
+        ajax.post("/api/teacher/list",null,function (data) {
+            for (let i = 0; i < data.length; i++) {
+                $("#select_teacher").append("<option value='"+data[i].uid+"'>"+data[i].name+"-"+data[i].collegeName+"</option>")
+            }
+            form.render();
+        },function (res) {
+            ajax.errorMessage(res);
+        })
+
+        form.on('select(select_college)',function (data) {
+            if (data.value!==0){
+                ajax.post("/api/major/list",{collegeId:data.value},function (res) {
+                    let str="";
+                    if (res.length>0){
+                        str="<option value='0'>选择专业或搜索</option>"
+                        for (let i = 0; i < res.length; i++) {
+                            str+="<option value='"+res[i].id+"'>"+res[i].name+"</option>";
+                        }
+                    }else {
+                        str="<option value='0'>无专业</option>"
+                    }
+                    $("#select_major").html(str);
+                    form.render();
+                },function (err) {
+                    ajax.errorMessage(err);
+                },"loading")
+            }
+        })
+        form.on('submit(data-search-btn)',function (obj) {
+            //搜索器监听
+            table.reload('practice_student_divideTable', {
+                where: obj.field
+            }, 'data');
+            return false;
+        })
+        table.render({
+            elem: '#practice_student_divideTable',
+            id: 'practice_student_divideTable',
+            url: ajax.getHost()+'/admin/practice/student_divide/page',
+            toolbar: '#practice_student_divideToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50,rowspan:2},
+                {field: 'sname', title: '学生姓名',align:"left", sort: true},
+                {field: 'uid', title: '学生学号',align:"left", sort: true,width: 200},
+                {field: 'sex', title: '性别',align:"left",width: 80},
+
+                {field: 'grade', title: '年级',align:"left", sort: true},
+                {field: 'major', title: '学生专业',align:"left", sort: true,width: 200},
+                // {field: 'type', title: '专业性质',align:"center", sort: true},
+                {field: 'college', title: '二级学院',align:"left", sort: true},
+                {field: 'classes', title: '班级',align:"left", sort: true,width: 200},
+
+                {field: 'bname', title: '实习基地',align:"left", sort: true},
+                {field: 'tname', title: '指导教师',align:"left", sort: true},
+                {field: 'teamTeacher', title: '带队教师',align:"left", sort: true},
+                // {field: 'school', title: '是否在校',align:"center", sort: true,templet:function (d) {
+                //         if (d.school){
+                //             return "<span class=\"layui-badge layui-bg-green\">在校教师</span>"
+                //         }
+                //         return "<span class=\"layui-badge layui-bg-black\">校外教师</span>"
+                //     }},
+                // {field: 'ttel', title: '教师电话',align:"center", sort: true},
+                {title: '操作', minWidth: 100, toolbar: '#practice_student_divideTableBar', align: "right"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(practice_student_divideTable)', function (obj) {
+            switch (obj.event) {
+                case "add":
+                    layer.open({
+                        type: 2,
+                        anim:1,
+                        content: 'form/practice_student_divide.html',
+                        area: ['50%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_student_divideTable');
+                        }
+                    });
+                    break;
+                case "excel":
+                    layer.open({
+                        title:"批量分配学生实习",
+                        type: 2,
+                        anim:1,
+                        content: 'excel/practice_student_divide.html',
+                        area: ['30%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_student_divideTable');
+                        }
+                    });
+                    break;
+                case "template":
+                    window.location=ajax.getHost()+"/file/excel/template?type=practiceStudentDivide"
+                    break;
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(practice_student_divideTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(practice_student_divideTable)', function (obj) {
+            let data = obj.data;
+            console.log(data)
+            if (obj.event === 'delete') {
+
+            }
+
+            switch (obj.event){
+                case "delete":
+                    let push={uid:data.uid}
+                    layer.confirm('警告！取消分配后该学生的成绩和签到数据将被清空', function (index) {
+                        ajax.post("/admin/practice/student_divide/undivided",push,function () {
+                            obj.del();
+                            layer.close(index);
+                        },function (data) {
+                            ajax.errorMessage(data);
+                        })
+                    });
+                    break;
+                case "edit":
+                    layer.open({
+                        type: 2,
+                        anim:1,
+                        content: 'form/student_divide.html?uid='+data.uid,
+                        area: ['50%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_student_divideTable');
+                        }
+                    });
+                    break;
+            }
+
+
+        });
+
+    });
+</script>
+
+</body>
+</html>

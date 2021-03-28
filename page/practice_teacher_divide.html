@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>实习基地管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <blockquote class="layui-elem-quote">当前操作实习批次:<strong id="now"></strong>
+        <a href="javascript:;" layuimini-content-href="page/practice_batch.html" data-title="实习批次管理">>>设置>></a>
+    </blockquote>
+    <div class="layuimini-main">
+        <script type="text/html" id="practice_teacher_divideToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">添加</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel导入</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板</button>
+            </div>
+        </script>
+        <table class="layui-hide" id="practice_teacher_divideTable" lay-filter="practice_teacher_divideTable"></table>
+        <script type="text/html" id="practice_teacher_divideTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">取消分配</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">管理配额</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax','layer','miniTab'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            layer = layui.layer,
+            miniTab = layui.miniTab,
+            table = layui.table;
+        miniTab.listen();
+        ajax.post("/admin/practice/batch/now",null,function (res) {
+            if (res!=null){
+                $("#now").html(res.name);
+            }
+        },function (err) {
+            ajax.LMessageError("获取当前实习批次失败")
+        })
+        table.render({
+            elem: '#practice_teacher_divideTable',
+            id: 'practice_teacher_divideTable',
+            url: ajax.getHost()+'/admin/practice/teacher_divide/page',
+            toolbar: '#practice_teacher_divideToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50,rowspan:2},
+                {field: 'uid', title: '教师工号',align:"left", sort: true},
+                {field: 'name', title: '教师姓名',align:"left", sort: true},
+                {field: 'sex', title: '教师性别',align:"left", sort: true},
+                {field: 'collegeName', title: '所属学院',align:"left", sort: true},
+                {field: 'tel', title: '教师电话',align:"left", sort: true},
+                {field: 'school', title: '是否在校',align:"left", sort: true,templet:function (d) {
+                        if (d.school){
+                            return "<span class=\"layui-badge layui-bg-green\">在校教师</span>"
+                        }
+                        return "<span class=\"layui-badge layui-bg-black\">校外教师</span>"
+                    }},
+                {title: '操作', minWidth: 100,rowspan:2, toolbar: '#practice_teacher_divideTableBar', align: "right"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(practice_teacher_divideTable)', function (obj) {
+            switch (obj.event) {
+                case "add":
+                    layer.open({
+                        type: 2,
+                        anim:1,
+                        content: 'form/practice_teacher_divide.html',
+                        area: ['50%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_teacher_divideTable');
+                        }
+                    });
+                    break;
+                case "excel":
+                    layer.open({
+                        title:"批量分配教师",
+                        type: 2,
+                        anim:1,
+                        content: 'excel/practice_teacher_divide.html',
+                        area: ['30%', '90%'],
+                        maxmin: true,
+                        end:function () {
+                            table.reload('practice_teacher_divideTable');
+                        }
+                    });
+                    break;
+                case "template":
+                    window.location=ajax.getHost()+"/file/excel/template?type=practiceTeacherDivide"
+                    break;
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(practice_teacher_divideTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(practice_teacher_divideTable)', function (obj) {
+            let data = obj.data;
+            console.log(data)
+            if (obj.event === 'delete') {
+                let push={uid:data.uid,name:data.name}
+                layer.confirm('警告！不建议再分配后再取消分配，除非没有学生选定这个教师实习', function (index) {
+                    ajax.post("/admin/practice/teacher_divide/undivided",push,function () {
+                        obj.del();
+                        layer.close(index);
+                    },function (data) {
+                        ajax.errorMessage(data);
+                    })
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

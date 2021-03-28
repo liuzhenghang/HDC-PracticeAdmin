@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="collegeToolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+            </div>
+        </script>
+        <table class="layui-hide" id="collegeTable" lay-filter="collegeTable"></table>
+        <script type="text/html" id="collegeTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','easyAjax'], function () {
+        var $ = layui.jquery,
+            ajax = layui.easyAjax,
+            table = layui.table;
+
+        table.render({
+            elem: '#collegeTable',
+            id: 'collegeTable',
+            url: ajax.getHost()+'/admin/college/page',
+            toolbar: '#collegeToolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            headers:ajax.getHeader(),
+            parseData:function(data){
+                if (data.code===0){
+                    return {
+                        code:0,
+                        msg:'success',
+                        count:data.data.count,
+                        data:data.data.data
+                    }
+                }
+                return {
+                    code:data.code,
+                    msg:data.msg,
+                    count:0,
+                    data:null
+                }
+            },
+            cols: [[
+                {type: "checkbox", width: 50},
+                {field: 'id', width: 80, title: 'ID', sort: true},
+                {field: 'name', width: 200, title: '二级学院名称',edit:'text'},
+                // {field: 'teacher', width: 80, title: '带队教师', sort: true},
+                // {field: 'director', width: 80, title: '备注'},
+                {title: '操作', minWidth: 150, toolbar: '#collegeTableBar', align: "center"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        table.on('edit(collegeTable)',function (obj) {
+            ajax.post("/admin/college/update",obj.data,function () {
+                ajax.LMessageSuccess("修改成功");
+            },function (data) {
+                ajax.errorMessage(data);
+                table.reload('collegeTable');
+            })
+        })
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(collegeTable)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+
+                layer.prompt({title: '添加二级学院', formType: 0}, function(text, index){
+                    ajax.post("/admin/college/add",{name:text},
+                    function () {
+                        table.reload('collegeTable');
+                        layer.close(index);
+                    },function (data) {
+                            ajax.errorMessage(data);
+                        })
+                });
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(collegeTable)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(collegeTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'delete') {
+                layer.confirm('真的删除行么', function (index) {
+                    ajax.post("/admin/college/del",data,function () {
+                        obj.del();
+                        layer.close(index);
+                    },function (data) {
+                        ajax.errorMessage(data);
+                    })
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>
