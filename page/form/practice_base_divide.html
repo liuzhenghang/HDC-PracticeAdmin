@@ -13,7 +13,49 @@
     <script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 </head>
 <body>
+<fieldset class="table-search-fieldset">
+    <legend>搜索信息</legend>
+    <div style="margin: 10px 10px 10px 10px">
+        <form class="layui-form layui-form-pane">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">基地名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="name" placeholder="请输入基地名称模糊搜索" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">地址</label>
+                    <div class="layui-input-block" id="area-picker">
+                        <div class="layui-input-inline" style="width: 200px;">
+                            <select name="province" class="province-selector" lay-filter="province-1">
+                                <option>请选择省</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="width: 200px;">
+                            <select name="city" class="city-selector" lay-filter="city-1">
+                                <option>请选择市</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="width: 200px;">
+                            <select name="county" class="county-selector" lay-filter="county-1">
+                                <option>请选择区</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i
+                            class="layui-icon"></i> 搜 索
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</fieldset>
     <div style="padding: 15px" id="vue">
+
         <fieldset class="layui-elem-field">
             <legend>实习基地分配</legend>
             <div class="layui-field-box">
@@ -54,7 +96,6 @@
                                 <button v-show="!item.divided" @click="divide(item)" class="layui-btn layui-btn-sm">分配到批次</button>
                                 <button v-show="item.divided" @click="undivided(item)" class="layui-btn layui-btn-sm layui-btn-danger">取消分配</button>
                             </div>
-
                         </td>
                     </tr>
                     </tbody>
@@ -64,8 +105,23 @@
     </div>
 </body>
 <script>
-    layui.use('easyAjax',function () {
-        let ajax=layui.easyAjax;
+    layui.use(['easyAjax','layarea','form'],function () {
+        let ajax=layui.easyAjax,
+            form = layui.form,
+            layarea = layui.layarea;
+        let layareaData = {
+            province: null,
+            city: null,
+            county: null,
+        }
+        layarea.render({
+            elem: '#area-picker',
+            data: layareaData,
+            change: function (res) {
+                //选择结果
+                console.log(res);
+            }
+        });
         let vue=new Vue({
             el:"#vue",
             data:{
@@ -110,32 +166,39 @@
         },function (data) {
             ajax.errorMessage(data)
         },"正在拉取表单")
-        ajax.post("/admin/practice/base/all",null,function (res) {
-            let base=res;
-            for (let i = 0; i < base.length; i++) {
-                base[i].divided=false;
-                base[i].display=true;
-            }
-            ajax.post("/admin/practice/base_divide/all",null,function (data) {
-                let divide=data;
-                console.log(divide)
-                console.log(base)
-                for (let i = 0; i < divide.length; i++) {
-                    for (let j = 0; j < base.length; j++) {
-                        if (base[j].id===divide[i].baseId){
-                            base[j].divided=true;
-                            base[j].display=false;
+        function loadTable(rule) {
+            ajax.post("/admin/practice/base/all",rule,function (res) {
+                let base=res;
+                for (let i = 0; i < base.length; i++) {
+                    base[i].divided=false;
+                    base[i].display=true;
+                }
+                ajax.post("/admin/practice/base_divide/all",null,function (data) {
+                    let divide=data;
+                    for (let i = 0; i < divide.length; i++) {
+                        for (let j = 0; j < base.length; j++) {
+                            if (base[j].id===divide[i].baseId){
+                                base[j].divided=true;
+                                base[j].display=false;
+                            }
                         }
                     }
-                }
-                vue.base=base;
+                    vue.base=base;
+                },function (err) {
+                    ajax.errorMessage(err)
+                },"正在拉取分配信息");
+
             },function (err) {
                 ajax.errorMessage(err)
-            },"正在拉取分配信息");
+            },"正在获取");
+        }
+        loadTable(null);
+        form.on('submit(data-search-btn)', function (obj) {
+            //搜索器监听
+            loadTable(obj.field);
+            return false;
+        })
 
-        },function (err) {
-            ajax.errorMessage(err)
-        },"正在获取");
     })
 </script>
 </html>

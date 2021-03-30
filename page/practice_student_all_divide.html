@@ -149,14 +149,6 @@
         }, "正在拉取数据")
         form.on('submit(data-search-btn)', function (obj) {
             let data = obj.field;
-            if (data.divide === "true") {
-                data.divide = true;
-            } else if (data.divide === "false") {
-                data.divide = false;
-            } else {
-                data.divide = null;
-            }
-            console.log(data)
             //搜索器监听
             table.reload('studentTable', {
                 where: data
@@ -166,11 +158,12 @@
         form.on('select(select_college)', function (data) {
             if (data.value !== 0) {
                 ajax.post("/api/major/list", {collegeId: data.value}, function (res) {
+                    console.log(res);
                     let str = "";
                     if (res.length > 0) {
                         str = "<option value='0'>选择专业或搜索</option>"
                         for (let i = 0; i < res.length; i++) {
-                            str += "<option value='" + res[i].id + "'>" + res[i].name + "</option>";
+                            str += "<option value='" + res[i].id + "'>" + res[i].name+"-"+res[i].type + "</option>";
                         }
                     } else {
                         str = "<option value='0'>无专业</option>"

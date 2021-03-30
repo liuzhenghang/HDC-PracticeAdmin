@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>统计</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style>
+        .sum {
+            text-align: justify;
+            text-align-last: justify;
+        }
+    </style>
+
+</head>
+<body>
+<div style="padding: 20px" id="app">
+    <table class="layui-table">
+        <thead>
+        <tr>
+            <th>序号</th>
+            <th>实习基地</th>
+            <th v-for="major in majors">{{major.name}}</th>
+            <th>合计</th>
+            <th>二级学院</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(base,index) in basis">
+            <td>{{index + 1}}</td>
+            <td>{{base.name}}</td>
+            <td v-for="count in base.count">{{count}}</td>
+            <td>{{sumBaseCount(base.count)}}</td>
+            <td>{{base.collegeName}}</td>
+        </tr>
+        <tr>
+            <td class="sum" colspan="2">合计</td>
+            <th v-for="(major,index) in majors">{{sumMajorCount(index)}}</th>
+            <th>{{sumAllCount()}}</th>
+            <th></th>
+        </tr>
+
+        </tbody>
+    </table>
+    <button id="out">导出</button>
+</div>
+</body>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../lib/vue.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['easyAjax', 'table', 'jquery', 'layer'], function () {
+        let ajax = layui.easyAjax,
+            table = layui.table,
+            layer = layui.layer,
+            $ = layui.jquery;
+        let app = new Vue({
+            el: "#app",
+            data: {
+                majors: [],
+                basis: []
+            },
+            methods: {
+                sumBaseCount: function (count) {
+                    let sum = 0;
+                    for (let i = 0; i < count.length; i++) {
+                        sum += count[i];
+                    }
+                    return sum;
+                },
+                sumMajorCount: function (index) {
+                    let sum = 0;
+                    let basis = this.basis;
+                    for (let i = 0; i < basis.length; i++) {
+                        sum += basis[i].count[index];
+                    }
+                    return sum;
+                },
+                sumAllCount: function () {
+                    let sum = 0;
+                    let basis = this.basis;
+                    let majors = this.majors;
+                    for (let i = 0; i < basis.length; i++) {
+                        for (let j = 0; j < majors.length; j++) {
+                            sum += basis[i].count[j];
+                        }
+                    }
+                    return sum;
+                }
+            }
+        })
+        $("#out").click(function () {
+            ajax.get("/admin/practice/student_divide/statistics/excel", null, function (res) {
+                console.log(res)
+                layer.open({
+                    type: 0,
+                    title: "微信绑定提示",
+                    content: '<p>表格导出完成</p>' +
+                        '<p><a href="' + ajax.getHost() + "/file/temp/download/fid?fid=" + res + '">点击此处下载</a></p>' +
+                        '<p>您也可以关闭后在文件管理中下载</p>',
+                    btn: ["关闭"],
+                });
+            }, function (err) {
+                ajax.errorMessage(err)
+            }, "正在完成统计")
+        })
+        ajax.get("/admin/practice/student_divide/statistics", null, function (res) {
+            app.majors = res.majors
+            app.basis = res.bases
+        }, function (err) {
+            ajax.errorMessage(err)
+        }, "正在完成统计")
+    })
+</script>
+</html>

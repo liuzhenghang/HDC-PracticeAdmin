@@ -60,7 +60,7 @@
         <table class="layui-hide" id="studentTable" lay-filter="studentTable"></table>
         <script type="text/html" id="studentTableBar">
             <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-primary data-count-delete" lay-event="edit">编辑</a>
             <!--            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="divide">分配实习</a>-->
         </script>
     </div>
@@ -97,7 +97,7 @@
                     if (res.length > 0) {
                         str = "<option value='0'>选择专业或搜索</option>"
                         for (let i = 0; i < res.length; i++) {
-                            str += "<option value='" + res[i].id + "'>" + res[i].name + "</option>";
+                            str += "<option value='" + res[i].id + "'>" + res[i].name+ "</option>";
                         }
                     } else {
                         str = "<option value='0'>无专业</option>"

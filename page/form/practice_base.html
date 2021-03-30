@@ -25,21 +25,15 @@
             <div class="layui-form-item" pane>
                 <label class="layui-form-label">地址</label>
                 <div class="layui-input-block" id="area-picker">
-<!--                        <div class="layui-input-inline" style="width: 33%;float: left">-->
-                            <select name="province" class="province-selector" lay-filter="province-1">
-                                <option value="">请选择省</option>
-                            </select>
-<!--                        </div>-->
-<!--                        <div class="layui-input-inline" style="width: 33%;float: left">-->
-                            <select name="city" class="city-selector" lay-filter="city-1">
-                                <option value="">请选择市</option>
-                            </select>
-<!--                        </div>-->
-<!--                        <div class="layui-input-inline" style="width: 33%;float: left">-->
-                            <select name="county" class="county-selector" lay-filter="county-1">
-                                <option value="">请选择区</option>
-                            </select>
-<!--                        </div>-->
+                    <select name="province" class="province-selector" lay-filter="province-1">
+                        <option>请选择省</option>
+                    </select>
+                    <select name="city" class="city-selector" lay-filter="city-1">
+                        <option>请选择市</option>
+                    </select>
+                    <select name="county" class="county-selector" lay-filter="county-1">
+                        <option>请选择区</option>
+                    </select>
                 </div>
             </div>
 
@@ -86,7 +80,6 @@
                 let form = layui.form,
                     layer=layui.layer,
                     layarea = layui.layarea;
-                console.log("ok")
 
                 let id=null;
                 let layareaData={

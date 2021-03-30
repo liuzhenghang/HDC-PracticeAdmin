@@ -54,7 +54,7 @@
         <table class="layui-hide" id="teacherTable" lay-filter="teacherTable"></table>
         <script type="text/html" id="teacherTableBar">
             <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-primary data-count-delete" lay-event="edit">编辑</a>
             <a class="layui-btn layui-btn-xs layui-btn-normal data-count-delete" lay-event="new_user">开设账号</a>
         </script>
     </div>
@@ -122,7 +122,7 @@
                 {field: 'collegeName', width: 200, title: '二级学院'},
                 {field: 'tel', title: '个人电话'},
                 // {field: 'director', width: 80, title: '备注'},
-                {title: '操作', minWidth: 150, toolbar: '#teacherTableBar', align: "center"}
+                {title: '操作', minWidth: 150, toolbar: '#teacherTableBar', align: "right"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,

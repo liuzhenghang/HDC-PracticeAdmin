@@ -8,7 +8,7 @@ layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function 
     var $ = layui.$,
         layer = layui.layer;
     let DEBUG=true;
-    // let HOST="http://localhost:8080/";
+    // let HOST="http://127.0.0.1:8080/";
     // let HOST="http://hdxy-test.qxhua21.cn/";
     let HOST="https://server.practice.qxhua21.cn/";
     let WS="ws://"+HOST.split("//")[1];

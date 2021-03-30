@@ -133,7 +133,7 @@
                                 if (res.length>0){
                                     str="<option value='0'>选择专业或搜索</option>"
                                     for (let i = 0; i < res.length; i++) {
-                                        str+="<option value='"+res[i].id+"'>"+res[i].name+"</option>";
+                                        str+="<option value='"+res[i].id+"'>"+res[i].name+"-"+res[i].type+"</option>";
                                     }
                                 }else {
                                     str="<option value='0'>无专业</option>"
@@ -167,7 +167,7 @@
                         if (res.length>0){
                             str="<option value='0'>选择专业或搜索</option>"
                             for (let i = 0; i < res.length; i++) {
-                                str+="<option value='"+res[i].id+"'>"+res[i].name+"</option>";
+                                str+="<option value='"+res[i].id+"'>"+res[i].name+"-"+res[i].type+"</option>";
                             }
                         }else {
                             str="<option value='0'>无专业</option>"

@@ -11,6 +11,47 @@
 </head>
 <body>
 <div class="layuimini-container">
+    <fieldset class="table-search-fieldset">
+        <legend>搜索信息</legend>
+        <div style="margin: 10px 10px 10px 10px">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">基地名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入基地名称模糊搜索" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">地址</label>
+                        <div class="layui-input-block" id="area-picker">
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <select name="province" class="province-selector" lay-filter="province-1">
+                                    <option>请选择省</option>
+                                </select>
+                            </div>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <select name="city" class="city-selector" lay-filter="city-1">
+                                    <option>请选择市</option>
+                                </select>
+                            </div>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <select name="county" class="county-selector" lay-filter="county-1">
+                                    <option>请选择区</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i
+                                class="layui-icon"></i> 搜 索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </fieldset>
     <div class="layuimini-main">
         <script type="text/html" id="practice_baseToolbar">
             <div class="layui-btn-container">
@@ -22,7 +63,7 @@
         <table class="layui-hide" id="practice_baseTable" lay-filter="practice_baseTable"></table>
         <script type="text/html" id="practice_baseTableBar">
             <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-primary data-count-delete" lay-event="edit">编辑</a>
         </script>
     </div>
 </div>
@@ -30,27 +71,33 @@
 <script src="../lib/vue.js" charset="utf-8"></script>
 <script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table','easyAjax','layer'], function () {
+    layui.use(['form', 'table','easyAjax','layer','layarea'], function () {
         var $ = layui.jquery,
             ajax = layui.easyAjax,
             form = layui.form,
             layer = layui.layer,
+            layarea = layui.layarea,
             table = layui.table;
-        // ajax.post("/api/college/list",null,function (data) {
-        //     for (let i = 0; i < data.length; i++) {
-        //         $("#select_college").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>")
-        //     }
-        //     form.render();
-        // },function (res) {
-        //     ajax.errorMessage(res);
-        // })
-        // form.on('submit(data-search-btn)',function (obj) {
-        //     //搜索器监听
-        //     table.reload('practice_baseTable', {
-        //         where: obj.field
-        //     }, 'data');
-        //     return false;
-        // })
+        let layareaData = {
+            province: null,
+            city: null,
+            county: null,
+        }
+        layarea.render({
+            elem: '#area-picker',
+            data: layareaData,
+            change: function (res) {
+                //选择结果
+                console.log(res);
+            }
+        });
+        form.on('submit(data-search-btn)', function (obj) {
+            //搜索器监听
+            table.reload('practice_baseTable', {
+                where: obj.field
+            }, 'data');
+            return false;
+        })
         table.render({
             elem: '#practice_baseTable',
             id: 'practice_baseTable',
