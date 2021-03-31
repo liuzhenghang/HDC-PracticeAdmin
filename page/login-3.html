@@ -35,7 +35,7 @@
         .login-main .login-bottom {width:428px;background:#fff;border-radius:0 0 12px 12px;padding-bottom:53px;}
         .login-main .login-bottom .center {width:288px;margin:0 auto;padding-top:40px;padding-bottom:15px;position:relative;}
         .login-main .login-bottom .tip {clear:both;height:16px;line-height:16px;width:288px;margin:0 auto;}
-        body {background:url(../images/loginbg.png) 0% 0% / cover no-repeat;position:static;font-size:12px;transition: all 0.5s}
+        body {background:url(../images/hdbg.jpg) 0% 0% / cover no-repeat;position:static;font-size:12px;transition: all 0.5s;}
         input::-webkit-input-placeholder {color:#a6aebf;}
         input::-moz-placeholder {/* Mozilla Firefox 19+ */            color:#a6aebf;}
         input:-moz-placeholder {/* Mozilla Firefox 4 to 18 */            color:#a6aebf;}
@@ -58,7 +58,8 @@
 </head>
 <body>
 <div class="main-body">
-    <div class="login-main">
+
+    <div class="login-main" id="login-main">
         <div class="login-top">
             <span>邯郸学院-教育实习系统</span>
             <span class="bg1"></span>
@@ -77,17 +78,17 @@
                     <span class="bind-password icon icon-4"></span>
                 </div>
 
-<!--                <div id="validatePanel" class="item" style="width: 137px;">-->
-<!--                    <input type="text" name="captcha" placeholder="请输入验证码" maxlength="4">-->
-<!--                    <img id="refreshCaptcha" class="validateImg"  src="../images/captcha.jpg" >-->
-<!--                </div>-->
+                <!--                <div id="validatePanel" class="item" style="width: 137px;">-->
+                <!--                    <input type="text" name="captcha" placeholder="请输入验证码" maxlength="4">-->
+                <!--                    <img id="refreshCaptcha" class="validateImg"  src="../images/captcha.jpg" >-->
+                <!--                </div>-->
 
             </div>
-<!--            <div class="tip">-->
-<!--                <span class="icon-nocheck"></span>-->
-<!--                <span class="login-tip">保持登录</span>-->
-<!--                <a href="javascript:" class="forget-password">忘记密码？</a>-->
-<!--            </div>-->
+            <!--            <div class="tip">-->
+            <!--                <span class="icon-nocheck"></span>-->
+            <!--                <span class="login-tip">保持登录</span>-->
+            <!--                <a href="javascript:" class="forget-password">忘记密码？</a>-->
+            <!--            </div>-->
             <div class="layui-form-item" style="text-align:center; width:100%;height:100%;margin:0px;">
                 <button class="login-btn" lay-submit="" lay-filter="login">立即登录</button>
             </div>
@@ -117,7 +118,9 @@
 
         })
         ajax.post("/api/image/bing",null,function (res) {
-            $("body").css("background","url('"+res.url+"')")
+            // setTimeout(function () {
+            //     $("body").css("background","url('"+res.url+"')")
+            // },1000)
             $("#bing-image").html("背景图来自于"+res.copyright)
         })
         $('.bind-password').on('click', function () {
@@ -151,16 +154,18 @@
             }
             ajax.post("/admin/user/login",{uid:data.username,password:data.password},
             function (data) {
-                console.log(data)
                 let header={
                     uid:data.uid,
                     session:data.session,
                     identity:"admin"
                 }
                 ajax.setHeader(header)
-                console.log(ajax.getHeader())
-                layer.msg('登录成功', function () {
-                    window.location = '../index.html';
+                layer.msg('登陆成功', {
+                    icon: 1,
+                    time:1000,
+                    end:function () {
+                        window.location = '../index.html';
+                    }
                 });
             },function (data) {
                     ajax.errorMessage(data);

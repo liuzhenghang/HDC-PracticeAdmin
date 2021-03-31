@@ -77,8 +77,6 @@
                             </select>
                         </div>
                     </div>
-
-
                     <div class="layui-inline">
                         <button class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i
                                 class="layui-icon"></i> 搜 索
@@ -94,6 +92,8 @@
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel批量分配
                 </button>
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板
+                </button>
+                <button class="layui-btn layui-btn-primary layui-btn-sm data-add-btn" lay-event="export">导出当前列表
                 </button>
             </div>
         </script>
@@ -199,7 +199,7 @@
             id: 'studentTable',
             url: ajax.getHost() + '/admin/practice/student_divide/page/all',
             toolbar: '#studentToolbar',
-            defaultToolbar: ['filter', 'exports', 'print', {
+            defaultToolbar: ['filter', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
@@ -287,6 +287,22 @@
                         }
                     });
                     break;
+                case "export":
+                    ajax.post("/admin/practice/student_divide/list/excel",null,function (res) {
+                        console.log(res)
+                        layer.open({
+                            type: 0,
+                            title: "文件导出成功",
+                            content: '<p>表格导出完成,共'+res.total+'条数据</p>' +
+                                '<p><a href="' + ajax.getHost() + "/file/temp/download/fid?fid=" + res.other + '">点击此处下载</a></p>' +
+                                '<p>您也可以关闭后在文件管理中下载</p>',
+                            btn: ["关闭"],
+                        });
+                    },function (err) {
+                        ajax.errorMessage(err)
+                    },"正在整理数据")
+                    break;
+
                 case "template":
                     window.location = ajax.getHost() + "/file/excel/template?type=practiceStudentDivide"
                     break;
