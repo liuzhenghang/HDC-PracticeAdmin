@@ -97,7 +97,7 @@
                 console.log(res)
                 layer.open({
                     type: 0,
-                    title: "微信绑定提示",
+                    title: "文件导出成功",
                     content: '<p>表格导出完成</p>' +
                         '<p><a href="' + ajax.getHost() + "/file/temp/download/fid?fid=" + res + '">点击此处下载</a></p>' +
                         '<p>您也可以关闭后在文件管理中下载</p>',
@@ -110,6 +110,7 @@
         ajax.get("/admin/practice/student_divide/statistics", null, function (res) {
             app.majors = res.majors
             app.basis = res.bases
+            console.log(res);
         }, function (err) {
             ajax.errorMessage(err)
         }, "正在完成统计")

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>专业管理</title>
+    <title>用户管理</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -96,12 +96,12 @@
                 {type: "checkbox", width: 50},
                 {field: 'id', width: 140, title: '索引', sort: true},
                 {field: 'uid', width: 140, title: '学号/工号', sort: true},
-                {field: '', width: 200, title: '微信状态',templet:function (d) {
-                        if (d.openId!=null){
-                            return d.bindTime
-                        }
-                        return "<span class='layui-badge layui-bg-gray'>未绑定</span>"
-                    }},
+                // {field: '', width: 200, title: '微信状态',templet:function (d) {
+                //         if (d.openId!=null){
+                //             return d.bindTime
+                //         }
+                //         return "<span class='layui-badge layui-bg-gray'>未绑定</span>"
+                //     }},
                 {field: '', width: 140, title: '权限等级',templet:function (d) {
                         switch (d.status) {
                             case 0:return "超级管理员"
