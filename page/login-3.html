@@ -35,7 +35,7 @@
         .login-main .login-bottom {width:428px;background:#fff;border-radius:0 0 12px 12px;padding-bottom:53px;}
         .login-main .login-bottom .center {width:288px;margin:0 auto;padding-top:40px;padding-bottom:15px;position:relative;}
         .login-main .login-bottom .tip {clear:both;height:16px;line-height:16px;width:288px;margin:0 auto;}
-        body {background:url(../images/loginbg.png) 0% 0% / cover no-repeat;position:static;font-size:12px;transition: all 0.5s}
+        body {background:url(../images/sx_bg.png) 0% 0% / cover no-repeat;position:static;font-size:12px;transition: all 0.5s}
         input::-webkit-input-placeholder {color:#a6aebf;}
         input::-moz-placeholder {/* Mozilla Firefox 19+ */            color:#a6aebf;}
         input:-moz-placeholder {/* Mozilla Firefox 4 to 18 */            color:#a6aebf;}
@@ -115,10 +115,6 @@
             window.location = '../index.html';
         },function (data) {
 
-        })
-        ajax.post("/api/image/bing",null,function (res) {
-            $("body").css("background","url('"+res.url+"')")
-            $("#bing-image").html("背景图来自于"+res.copyright)
         })
         $('.bind-password').on('click', function () {
             if ($(this).hasClass('icon-5')) {
