@@ -62,7 +62,7 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'id', width: 80, title: 'ID', sort: true},
-                {field: 'name', width: 200, title: '二级学院名称',edit:'text'},
+                {field: 'name', width: 200, title: '专业名称',edit:'text'},
                 // {field: 'teacher', width: 80, title: '带队教师', sort: true},
                 // {field: 'director', width: 80, title: '备注'},
                 {title: '操作', minWidth: 150, toolbar: '#collegeTableBar', align: "right"}
@@ -88,7 +88,7 @@
         table.on('toolbar(collegeTable)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
 
-                layer.prompt({title: '添加二级学院', formType: 0}, function(text, index){
+                layer.prompt({title: '添加专业', formType: 0}, function(text, index){
                     ajax.post("/admin/college/add",{name:text},
                     function () {
                         table.reload('collegeTable');

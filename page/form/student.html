@@ -26,12 +26,12 @@
                     <input type="text" name="name" required lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
                 </div>
             </div>
-            <div class="layui-form-item" pane>
-                <label class="layui-form-label">班级</label>
-                <div class="layui-input-block">
-                    <input type="text" name="classes" required lay-verify="required" placeholder="请输入班级名" autocomplete="off" class="layui-input">
-                </div>
-            </div>
+<!--            <div class="layui-form-item" pane>-->
+<!--                <label class="layui-form-label">班级</label>-->
+<!--                <div class="layui-input-block">-->
+<!--                    <input type="text" name="classes" required lay-verify="required" placeholder="请输入班级名" autocomplete="off" class="layui-input">-->
+<!--                </div>-->
+<!--            </div>-->
             <div class="layui-form-item" pane>
                 <label class="layui-form-label">电话</label>
                 <div class="layui-input-block">
@@ -47,19 +47,19 @@
 
 
             <div class="layui-form-item" pane>
-                <label class="layui-form-label">二级学院</label>
+                <label class="layui-form-label">专业</label>
                 <div class="layui-input-block">
                     <select name="college" lay-filter="select_college" lay-verify="required">
-                        <option value="">请选择一个二级学院</option>
+                        <option value="">请选择一个专业</option>
                         <option :value="item.id" v-for="item in college">{{item.name}}</option>
                     </select>
                 </div>
             </div>
             <div class="layui-form-item" pane>
-                <label class="layui-form-label">二级学院</label>
+                <label class="layui-form-label">班级</label>
                 <div class="layui-input-block">
                     <select name="major" id="select_major" lay-verify="required">
-                        <option value="">请选择专业</option>
+                        <option value="">请选择班级</option>
                     </select>
                 </div>
             </div>
@@ -131,7 +131,7 @@
                             ajax.post("/api/major/list",{collegeId:data.value},function (res) {
                                 let str="";
                                 if (res.length>0){
-                                    str="<option value='0'>选择专业或搜索</option>"
+                                    str="<option value='0'>选择班级或搜索</option>"
                                     for (let i = 0; i < res.length; i++) {
                                         str+="<option value='"+res[i].id+"'>"+res[i].name+"-"+res[i].type+"</option>";
                                     }

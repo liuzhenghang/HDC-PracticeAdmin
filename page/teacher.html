@@ -17,10 +17,10 @@
             <form class="layui-form layui-form-pane">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <label class="layui-form-label">二级学院</label>
+                        <label class="layui-form-label">专业</label>
                         <div class="layui-input-inline">
                             <select id="select_college" name="college" lay-filter="select_college" lay-verify="required" lay-search="">
-                                <option value="0">选择学院或搜索</option>
+                                <option value="0">选择专业或搜索</option>
                             </select>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                 {field: 'uid', width: 140, title: '工号', sort: true},
                 {field: 'name', width: 80, title: '姓名', sort: true},
                 {field: 'sex', width: 80, title: '性别'},
-                {field: 'collegeName', width: 200, title: '二级学院'},
+                {field: 'collegeName', width: 200, title: '所属专业'},
                 {field: 'tel', title: '个人电话'},
                 // {field: 'director', width: 80, title: '备注'},
                 {title: '操作', minWidth: 150, toolbar: '#teacherTableBar', align: "right"}
@@ -197,7 +197,7 @@
                     });
                     break;
                 case "new_user":
-                    layer.confirm('是否为该教师开设管理员账号,该教师将拥有其所属学院的管理权限', function (index) {
+                    layer.confirm('是否为该教师开设管理员账号,该教师将拥有其所属专业的管理权限', function (index) {
                         ajax.post("/admin/user/new/admin",data,function (res) {
                             layer.close(index);
                             layer.open({

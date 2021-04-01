@@ -72,7 +72,7 @@
                         <th>市</th>
                         <th>区（县）</th>
                         <th>详细地址</th>
-                        <th>指派学院</th>
+                        <th>指派专业</th>
                         <th>是否分配</th>
                         <th>操作</th>
                     </tr>
@@ -86,7 +86,7 @@
                         <td>{{item.address}}</td>
                         <td>
                             <select v-model="item.college">
-                                <option value ="0">请选择二级学院</option>
+                                <option value ="0">请选择专业</option>
                                 <option v-for="c in college" :value ="c.id">{{c.name}}</option>
                             </select>
                         </td>

@@ -44,10 +44,10 @@
 
 
             <div class="layui-form-item" pane>
-                <label class="layui-form-label">二级学院</label>
+                <label class="layui-form-label">专业</label>
                 <div class="layui-input-block">
                     <select name="college" lay-filter="select_college" lay-verify="required">
-                        <option value="">请选择一个二级学院</option>
+                        <option value="">请选择一个专业</option>
                         <option :value="item.id" v-for="item in college">{{item.name}}</option>
                     </select>
                 </div>

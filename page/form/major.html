@@ -15,16 +15,16 @@
         <div class="layui-field-box" id="app">
             <form class="layui-form layui-form-pane" lay-filter="majorForm">
                 <div class="layui-form-item" pane>
-                    <label class="layui-form-label">专业名</label>
+                    <label class="layui-form-label">班级名</label>
                     <div class="layui-input-block">
                         <input type="text" name="name" required lay-verify="required" placeholder="请输入专业名" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item" pane>
-                    <label class="layui-form-label">二级学院</label>
+                    <label class="layui-form-label">专业</label>
                     <div class="layui-input-block">
                         <select name="college" lay-verify="required">
-                            <option value="">请选择一个二级学院</option>
+                            <option value="">请选择一个专业</option>
                             <option :value="item.id" v-for="item in college">{{item.name}}</option>
                         </select>
                     </div>

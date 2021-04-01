@@ -17,19 +17,19 @@
             <form class="layui-form layui-form-pane">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <label class="layui-form-label">筛选二级学院</label>
+                        <label class="layui-form-label">筛选专业</label>
                         <div class="layui-input-inline">
                             <select id="select_college" name="college" lay-filter="select_college" lay-verify="required"
                                     lay-search="">
-                                <option value="0">选择学院或搜索</option>
+                                <option value="0">选择专业或搜索</option>
                             </select>
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label">筛选专业</label>
+                        <label class="layui-form-label">筛选班级</label>
                         <div class="layui-input-inline">
                             <select id="select_major" name="major" lay-verify="required" lay-search="">
-                                <option value="0">选择专业或搜索</option>
+                                <option value="0">选择班级或搜索</option>
                             </select>
                         </div>
                     </div>
@@ -144,11 +144,11 @@
                 {field: 'uid', width: 140, title: '学号', sort: true},
                 {field: 'name', width: 80, title: '姓名', sort: true},
                 {field: 'sex', width: 80, title: '性别', edit: 'text'},
-                {field: 'collegeName', width: 200, title: '学院'},
-                {field: 'majorName', width: 200, title: '专业'},
+                {field: 'collegeName', width: 200, title: '专业'},
+                {field: 'majorName', width: 200, title: '班级'},
                 // {field: 'baseName', width: 200, title: '实习学校(带队教师)'},
                 // {field: 'teacherName', width: 200, title: '指导教师'},
-                {field: 'classes', width: 200, title: '班级'},
+                // {field: 'classes', width: 200, title: '班级'},
                 {field: 'tel', width: 200, title: '个人电话'},
                 {field: 'mail', width: 200, title: '个人邮箱'},
                 // {field: 'director', width: 80, title: '备注'},

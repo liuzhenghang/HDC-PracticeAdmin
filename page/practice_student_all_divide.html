@@ -20,19 +20,19 @@
             <form class="layui-form layui-form-pane">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <label class="layui-form-label">筛选二级学院</label>
+                        <label class="layui-form-label">筛选专业</label>
                         <div class="layui-input-inline">
                             <select id="select_college" name="collegeId" lay-filter="select_college"
                                     lay-verify="required" lay-search="">
-                                <option value="0">选择学院或搜索</option>
+                                <option value="0">选择专业或搜索</option>
                             </select>
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label">筛选专业</label>
+                        <label class="layui-form-label">筛选班级</label>
                         <div class="layui-input-inline">
                             <select id="select_major" name="majorId" lay-verify="required" lay-search="">
-                                <option value="0">选择专业或搜索</option>
+                                <option value="0">选择班级或搜索</option>
                             </select>
                         </div>
                     </div>
@@ -161,7 +161,7 @@
                     console.log(res);
                     let str = "";
                     if (res.length > 0) {
-                        str = "<option value='0'>选择专业或搜索</option>"
+                        str = "<option value='0'>选择班级或搜索</option>"
                         for (let i = 0; i < res.length; i++) {
                             str += "<option value='" + res[i].id + "'>" + res[i].name+"-"+res[i].type + "</option>";
                         }
@@ -232,8 +232,8 @@
                 {field: 'uid', width: 140, title: '学号', sort: true},
                 {field: 'sname', width: 80, title: '姓名', sort: true},
                 {field: 'sex', width: 80, title: '性别', edit: 'text'},
-                {field: 'college', width: 200, title: '学院'},
-                {field: 'major', width: 200, title: '专业'},
+                {field: 'college', width: 200, title: '专业'},
+                {field: 'major', width: 200, title: '班级'},
                 {field: 'bname', width: 200, title: '实习学校(带队教师)', sort: true},
                 {field: 'tname', width: 200, title: '指导教师', sort: true},
                 // {field: 'classes', width: 200, title: '班级'},
