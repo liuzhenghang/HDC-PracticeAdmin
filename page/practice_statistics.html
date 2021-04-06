@@ -18,14 +18,14 @@
 </head>
 <body>
 <div style="padding: 20px" id="app">
-    <table class="layui-table">
+    <table class="layui-table" id="table" style="display: none">
         <thead>
         <tr>
             <th>序号</th>
             <th>实习基地</th>
             <th v-for="major in majors">{{major.name}}</th>
             <th>合计</th>
-            <th>二级学院</th>
+            <th>带队教师</th>
         </tr>
         </thead>
         <tbody>
@@ -34,7 +34,7 @@
             <td>{{base.name}}</td>
             <td v-for="count in base.count">{{count}}</td>
             <td>{{sumBaseCount(base.count)}}</td>
-            <td>{{base.collegeName}}</td>
+            <td>{{base.teamTeacherName}}</td>
         </tr>
         <tr>
             <td class="sum" colspan="2">合计</td>
@@ -45,7 +45,7 @@
 
         </tbody>
     </table>
-    <button id="out">导出</button>
+    <button id="out" class="layui-btn layui-btn-primary layui-btn-fluid">导出为Excel</button>
 </div>
 </body>
 <script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
@@ -110,7 +110,7 @@
         ajax.get("/admin/practice/student_divide/statistics", null, function (res) {
             app.majors = res.majors
             app.basis = res.bases
-            console.log(res);
+            $("#table").show()
         }, function (err) {
             ajax.errorMessage(err)
         }, "正在完成统计")
