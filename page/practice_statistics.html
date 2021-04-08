@@ -99,10 +99,10 @@
                     type: 0,
                     title: "文件导出成功",
                     content: '<p>表格导出完成</p>' +
-                        '<p><a href="' + ajax.getHost() + "/file/temp/download/fid?fid=" + res + '">点击此处下载</a></p>' +
-                        '<p>您也可以关闭后在文件管理中下载</p>',
+                        '<p>您也可以在文件管理中下载</p>',
                     btn: ["关闭"],
                 });
+                window.open(ajax.getHost() + "/file/temp/download/fid?fid=" + res.other)
             }, function (err) {
                 ajax.errorMessage(err)
             }, "正在完成统计")

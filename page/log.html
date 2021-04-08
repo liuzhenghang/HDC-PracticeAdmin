@@ -219,7 +219,11 @@
         let socket=false;
         function pushLog(log) {
             let dom=$("<p class='log "+log.level+" none'></p>")
-            log.log.replaceAll("\r","<br/>")
+            try {
+                log.log.replaceAll("\r","<br/>")
+            }catch (e) {
+
+            }
             dom.text(log.log)
             // let dom=$("<p class='log yellow none'>"+log.log+"</p>")
             $("#log-container").append(dom)
