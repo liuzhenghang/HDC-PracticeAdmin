@@ -26,7 +26,9 @@
                     </div>
 
                     <div class="layui-inline">
-                        <button class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                        <button class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i
+                                class="layui-icon"></i> 搜 索
+                        </button>
 
                     </div>
                 </div>
@@ -38,7 +40,10 @@
             <div class="layui-btn-container">
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">添加</button>
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="excel">Excel导入</button>
-                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板</button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="template">下载导入模板
+                </button>
+                <button class="layui-btn layui-btn-primary layui-btn-sm data-add-btn" lay-event="export">导出当前列表
+                </button>
             </div>
         </script>
         <table class="layui-hide" id="majorTable" lay-filter="majorTable"></table>
@@ -52,21 +57,21 @@
 <script src="../lib/vue.js" charset="utf-8"></script>
 <script src="../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table','easyAjax','layer'], function () {
+    layui.use(['form', 'table', 'easyAjax', 'layer'], function () {
         var $ = layui.jquery,
             ajax = layui.easyAjax,
             form = layui.form,
             layer = layui.layer,
             table = layui.table;
-        ajax.post("/api/college/list",null,function (data) {
+        ajax.post("/api/college/list", null, function (data) {
             for (let i = 0; i < data.length; i++) {
-                $("#select").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>")
+                $("#select").append("<option value='" + data[i].id + "'>" + data[i].name + "</option>")
             }
             form.render();
-        },function (res) {
+        }, function (res) {
             ajax.errorMessage(res);
         })
-        form.on('submit(data-search-btn)',function (obj) {
+        form.on('submit(data-search-btn)', function (obj) {
             //搜索器监听
             table.reload('majorTable', {
                 where: obj.field
@@ -76,31 +81,31 @@
         table.render({
             elem: '#majorTable',
             id: 'majorTable',
-            url: ajax.getHost()+'/admin/major/page',
+            url: ajax.getHost() + '/admin/major/page',
             toolbar: '#majorToolbar',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
             }],
-            where:{
-                collegeId:0
+            where: {
+                collegeId: 0
             },
-            headers:ajax.getHeader(),
-            parseData:function(data){
-                if (data.code===0){
+            headers: ajax.getHeader(),
+            parseData: function (data) {
+                if (data.code === 0) {
                     return {
-                        code:0,
-                        msg:'success',
-                        count:data.data.count,
-                        data:data.data.data
+                        code: 0,
+                        msg: 'success',
+                        count: data.data.count,
+                        data: data.data.data
                     }
                 }
                 return {
-                    code:data.code,
-                    msg:data.msg,
-                    count:0,
-                    data:null
+                    code: data.code,
+                    msg: data.msg,
+                    count: 0,
+                    data: null
                 }
             },
             cols: [[
@@ -128,30 +133,45 @@
                 case "add":
                     layer.open({
                         type: 2,
-                        anim:1,
+                        anim: 1,
                         content: 'form/major.html',
                         area: ['50%', '90%'],
                         maxmin: true,
-                        end:function () {
+                        end: function () {
                             table.reload('majorTable');
                         }
                     });
                     break;
                 case "excel":
                     layer.open({
-                        title:"导入专业",
+                        title: "导入专业",
                         type: 2,
-                        anim:1,
+                        anim: 1,
                         content: 'excel/major.html',
                         area: ['30%', '90%'],
                         maxmin: true,
-                        end:function () {
+                        end: function () {
                             table.reload('majorTable');
                         }
                     });
                     break;
                 case "template":
-                    window.location=ajax.getHost()+"/file/excel/template?type=major"
+                    window.location = ajax.getHost() + "/file/excel/template?type=major"
+                    break;
+                case "export":
+                    ajax.post("/admin/major/list/excel", null, function (res) {
+                        console.log(res)
+                        layer.open({
+                            type: 0,
+                            title: "文件导出成功",
+                            content: '<p>表格导出完成,共' + res.total + '条数据</p>' +
+                                '<p>您也可以在文件管理中下载</p>',
+                            btn: ["关闭"],
+                        });
+                        window.open(ajax.getHost() + "/file/temp/download/fid?fid=" + res.other)
+                    }, function (err) {
+                        ajax.errorMessage(err)
+                    }, "正在整理数据");
                     break;
             }
         });
@@ -165,21 +185,21 @@
             let data = obj.data;
             if (obj.event === 'delete') {
                 layer.confirm('真的删除行么', function (index) {
-                    ajax.post("/admin/college/del",data,function () {
+                    ajax.post("/admin/college/del", data, function () {
                         obj.del();
                         layer.close(index);
-                    },function (data) {
+                    }, function (data) {
                         ajax.errorMessage(data);
                     })
                 });
-            }else if (obj.event === 'edit'){
+            } else if (obj.event === 'edit') {
                 let index = layer.open({
                     type: 2,
-                    anim:1,
-                    content: 'form/major.html?edit='+data.id,
+                    anim: 1,
+                    content: 'form/major.html?edit=' + data.id,
                     area: ['50%', '90%'],
                     maxmin: true,
-                    end:function () {
+                    end: function () {
                         table.reload('majorTable');
                     }
                 });

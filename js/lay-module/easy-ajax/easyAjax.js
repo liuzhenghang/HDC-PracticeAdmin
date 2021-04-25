@@ -7,20 +7,20 @@
 layui.define(["jquery", "miniMenu", "element","miniTab", "miniTheme"], function (exports) {
     var $ = layui.$,
         layer = layui.layer;
-    let DEBUG=true;
+    let DEBUG = true;
     // let HOST="http://127.0.0.1:8080/";
-    // let HOST="http://hdxy-test.qxhua21.cn/";
-    let HOST="https://server.practice.qxhua21.cn/";
-    let WS="ws://"+HOST.split("//")[1];
+    let HOST = "http://hdxy-test.qxhua21.cn/";
+    // let HOST="https://server.practice.qxhua21.cn/";
+    let WS = "ws://" + HOST.split("//")[1];
 
-    let resCOde={success:0,loginEnd:400}
-    let formHeader="easy_ajax_form_key";
+    let resCOde = {success: 0, loginEnd: 400}
+    let formHeader = "easy_ajax_form_key";
 
     var easyAjax = {
-        defaultHeader:{},
-        setHeader:function(header){
-            this.defaultHeader=header;
-            localStorage.setItem("hdxy_practice_token",JSON.stringify(header));
+        defaultHeader: {},
+        setHeader: function (header) {
+            this.defaultHeader = header;
+            localStorage.setItem("hdxy_practice_token", JSON.stringify(header));
         },
         getHeader:function(){
             this.defaultHeader=JSON.parse(localStorage.getItem("hdxy_practice_token"))
