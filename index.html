@@ -180,18 +180,15 @@
             })
             ajax.post("/admin/user/info/bind",null,function (res) {
                 if (!res){
-                    // layer.open({
-                    //     type: 0,
-                    //     title: "微信绑定提示",
-                    //     content: '您的账号还没有绑定微信，丢失密码后无法找回，请前往微信绑定',
-                    //     btn:["前往绑定","稍后绑定"],
-                    //     yes:function () {
-                    //         bindWechat()
-                    //     },
-                    //     btn2:function () {
-                    //         layer.tips('您可以在这里手动绑定微信', '#admin_tips');
-                    //     }
-                    // });
+                    layer.open({
+                        type: 0,
+                        title: "微信绑定提示",
+                        content: '您的账号还没有绑定微信，丢失密码后无法找回，请前往微信绑定',
+                        btn: ["前往绑定"],
+                        yes: function () {
+                            bindWechat()
+                        }
+                    });
                 }
             },function (err) {
                 ajax.errorMessage(err)
